@@ -103,26 +103,6 @@ loader.load(
         scene.add(gltf.scene)
         sceneMeshes.push(gltf.scene)
 
-        // Frame the loaded model so it starts in view.
-        tempBox.setFromObject(gltf.scene)
-        tempBox.getSize(tempVec)
-        tempBox.getCenter(tempCenter)
-
-        const maxSize = Math.max(tempVec.x, tempVec.y, tempVec.z)
-        const fitHeightDistance = maxSize / (2 * Math.tan((Math.PI * camera.fov) / 360))
-        const fitWidthDistance = fitHeightDistance / camera.aspect
-        const distance = Math.max(fitHeightDistance, fitWidthDistance)
-
-        viewOffset.set(distance, distance * 0.75, distance)
-        camera.position.copy(tempCenter).add(viewOffset)
-        camera.near = Math.max(distance / 100, 0.1)
-        camera.far = Math.max(distance * 100, camera.near + 1)
-        camera.updateProjectionMatrix()
-
-        controls.target.copy(tempCenter)
-        controls.maxDistance = distance * 10
-        controls.update()
-
         const annotationsDownload = new XMLHttpRequest()
         annotationsDownload.open('GET', '/data/annotations.json')
         annotationsDownload.onreadystatechange = function () {
@@ -198,10 +178,6 @@ function onWindowResize() {
 }
 
 const v = new THREE.Vector2()
-const tempBox = new THREE.Box3()
-const tempVec = new THREE.Vector3()
-const tempCenter = new THREE.Vector3()
-const viewOffset = new THREE.Vector3()
 
 function onClick(event: MouseEvent) {
     v.set(
