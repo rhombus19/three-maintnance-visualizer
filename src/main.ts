@@ -11,10 +11,13 @@ interface Annotation {
     description: string
     position: THREE.Vector3
     lookAt: THREE.Vector3
+    camPos: THREE.Vector3
     descriptionDomElement?: HTMLElement
 }
 
-let annotations: { [key: string]: Annotation }
+type Annotations = { [key: string]: Annotation }
+
+let annotations: Annotations = {}
 const annotationMarkers: THREE.Sprite[] = []
 
 const scene = new THREE.Scene()
@@ -33,6 +36,7 @@ camera.position.y = 5
 camera.position.z = 8
 
 const renderer = new THREE.WebGLRenderer({ antialias: true })
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 renderer.setSize(window.innerWidth, window.innerHeight)
 document.body.appendChild(renderer.domElement)
 
@@ -51,122 +55,95 @@ controls.target.set(8, 3, 4)
 const raycaster = new THREE.Raycaster()
 const sceneMeshes = new Array()
 
-const circleTexture = new THREE.TextureLoader().load('img/circle.png')
+const circleTexture = new THREE.TextureLoader().load('/img/circle.png')
 
 const progressBar = document.getElementById('progressBar') as HTMLProgressElement
 
+async function loadAnnotations(url: string): Promise<Annotations> {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`)
+  return (await res.json()) as Annotations
+}
+
+// function processMaterial(material:THREE.MeshStandardMaterial){
+//     material.flatShading = true
+
+//     return material
+// }
+
 const dracoLoader = new DRACOLoader()
-dracoLoader.setDecoderPath('./js/libs/draco/')
+dracoLoader.setDecoderPath('/js/libs/draco/')
 
 const loader = new GLTFLoader()
 loader.setDRACOLoader(dracoLoader)
 loader.load(
-    './models/house-water-transformed.glb',
-    (gltf) => {
-        gltf.scene.traverse((c) => {
-            if ((c as THREE.Mesh).isMesh) {
-                const mesh = c as THREE.Mesh
-                const material = mesh.material as THREE.MeshStandardMaterial
-                if (!['sink_faiance', 'white_409', 'Ceramic'].includes(material.name)) {
-                    material.flatShading = true
-                }
-                if (
-                    [
-                        'ground_1',
-                        'wall_1_2',
-                        'room_58_344',
-                        'grey',
-                        'flltgrey',
-                        'flltgrey_sweethome3d_window_pane_420',
-                        'default',
-                        'Glass',
-                        'Glass_458',
-                        'flltgrey_sweethome3d_window_pane_479',
-                        'white_Fenetre_480',
-                        'white_13_526',
-                        'flltgrey_14_527',
-                        'wall_1_4',
-                        'glassblutint',
-                        'Aluminium_652',
-                        'Default_Texture',
-                        'GLASS',
-                        'Glass_sweethome3d_window_mirror_985',
-                        'cylinder_cylinder_1302',
-                    ].includes(material.name)
-                ) {
-                    material.transparent = true
-                    material.opacity = 0.2
-                    material.depthWrite = false
-                }
-            }
-        })
+    '/models/test_industrial.glb',
+    async (gltf) => {
+        // gltf.scene.traverse((c) => {
+        //     console.log(c)
+        //     if ((c as THREE.Mesh).isMesh) {
+        //         const mesh = c as THREE.Mesh
+        //         const material = processMaterial(mesh.material) as THREE.MeshStandardMaterial
+        //         mesh.material = material
+        //     }
+        // })
         scene.add(gltf.scene)
         sceneMeshes.push(gltf.scene)
+        annotations = await loadAnnotations('/data/annotations.json')
 
-        const annotationsDownload = new XMLHttpRequest()
-        annotationsDownload.open('GET', '/data/annotations.json')
-        annotationsDownload.onreadystatechange = function () {
-            if (annotationsDownload.readyState === 4) {
-                annotations = JSON.parse(annotationsDownload.responseText)
+        // everything below stays the same:
+        const annotationsPanel = document.getElementById('annotationsPanel') as HTMLDivElement
+        const ul = document.createElement('ul')
+        const ulElem = annotationsPanel.appendChild(ul)
 
-                const annotationsPanel = document.getElementById(
-                    'annotationsPanel'
-                ) as HTMLDivElement
-                const ul = document.createElement('ul') as HTMLUListElement
-                const ulElem = annotationsPanel.appendChild(ul)
-                Object.keys(annotations).forEach((a) => {
-                    const li = document.createElement('li') as HTMLLIElement
-                    const liElem = ulElem.appendChild(li)
-                    const button = document.createElement('button') as HTMLButtonElement
-                    button.innerHTML = a + ' : ' + annotations[a].title
-                    button.className = 'annotationButton'
-                    button.addEventListener('click', function () {
-                        gotoAnnotation(annotations[a])
-                    })
-                    liElem.appendChild(button)
+        Object.keys(annotations).forEach((a) => {
+            const li = document.createElement('li')
+            const liElem = ulElem.appendChild(li)
+            const button = document.createElement('button')
+            button.innerHTML = a + ' : ' + annotations[a].title
+            button.className = 'annotationButton'
+            button.addEventListener('click', function () {
+            gotoAnnotation(annotations[a])
+            })
+            liElem.appendChild(button)
 
-                    const annotationSpriteMaterial = new THREE.SpriteMaterial({
-                        map: circleTexture,
-                        depthTest: false,
-                        depthWrite: false,
-                        sizeAttenuation: false,
-                    })
-                    const annotationSprite = new THREE.Sprite(annotationSpriteMaterial)
-                    annotationSprite.scale.set(0.066, 0.066, 0.066)
-                    annotationSprite.position.copy(annotations[a].lookAt)
-                    annotationSprite.userData.id = a
-                    annotationSprite.renderOrder = 1
-                    scene.add(annotationSprite)
-                    annotationMarkers.push(annotationSprite)
+            const annotationSpriteMaterial = new THREE.SpriteMaterial({
+            map: circleTexture,
+            depthTest: false,
+            depthWrite: false,
+            sizeAttenuation: false,
+            })
+            const annotationSprite = new THREE.Sprite(annotationSpriteMaterial)
+            annotationSprite.scale.set(0.066, 0.066, 0.066)
+            annotationSprite.position.copy(annotations[a].lookAt) // works with {x,y,z}
+            annotationSprite.userData.id = a
+            annotationSprite.renderOrder = 1
+            scene.add(annotationSprite)
+            annotationMarkers.push(annotationSprite)
 
-                    const annotationDiv = document.createElement('div')
-                    annotationDiv.className = 'annotationLabel'
-                    annotationDiv.innerHTML = a
-                    const annotationLabel = new CSS2DObject(annotationDiv)
-                    annotationLabel.position.copy(annotations[a].lookAt)
-                    scene.add(annotationLabel)
+            const annotationDiv = document.createElement('div')
+            annotationDiv.className = 'annotationLabel'
+            annotationDiv.innerHTML = a
+            const annotationLabel = new CSS2DObject(annotationDiv)
+            annotationLabel.position.copy(annotations[a].lookAt)
+            scene.add(annotationLabel)
 
-                    if (annotations[a].description) {
-                        const annotationDescriptionDiv = document.createElement('div')
-                        annotationDescriptionDiv.className = 'annotationDescription'
-                        annotationDescriptionDiv.innerHTML = annotations[a].description
-                        annotationDiv.appendChild(annotationDescriptionDiv)
-                        annotations[a].descriptionDomElement = annotationDescriptionDiv
-                    }
-                })
-                progressBar.style.display = 'none'
+            if (annotations[a].description) {
+            const annotationDescriptionDiv = document.createElement('div')
+            annotationDescriptionDiv.className = 'annotationDescription'
+            annotationDescriptionDiv.innerHTML = annotations[a].description!
+            annotationDiv.appendChild(annotationDescriptionDiv)
+            annotations[a].descriptionDomElement = annotationDescriptionDiv
             }
-        }
-        annotationsDownload.send()
-    },
-    (xhr) => {
+        })
+
+        progressBar.style.display = 'none'
+        }, (xhr) => {
         if (xhr.lengthComputable) {
-            let percentComplete = (xhr.loaded / xhr.total) * 100
-            progressBar.value = percentComplete
+            progressBar.value = (xhr.loaded / xhr.total) * 100
             progressBar.style.display = 'block'
         }
-    }
-)
+        })
 
 window.addEventListener('resize', onWindowResize, false)
 function onWindowResize() {
