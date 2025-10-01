@@ -59,3 +59,18 @@ body {
     padding-left: 20px;
     cursor: pointer;
 }
+#xRayToggle{
+    position:absolute;
+    top:40px;
+    left:4px;
+    z-index:1;
+    width:120px;
+    height:30px;
+    font-family: monospace;
+    background-color: rgba(.25, .25, .25, .5);
+    color: white;
+    cursor: pointer;
+    border: solid blue 2px;
+    border-radius: 4px;
+    padding: 5px;
+}

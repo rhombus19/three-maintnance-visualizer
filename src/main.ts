@@ -58,6 +58,9 @@ const sceneMeshes = new Array()
 const circleTexture = new THREE.TextureLoader().load('/img/circle.png')
 
 const progressBar = document.getElementById('progressBar') as HTMLProgressElement
+const xRayToggleButton = document.getElementById('xRayToggle') as HTMLButtonElement | null
+
+let isXRayEnabled = false
 
 async function loadAnnotations(url: string): Promise<Annotations> {
   const res = await fetch(url)
@@ -65,11 +68,39 @@ async function loadAnnotations(url: string): Promise<Annotations> {
   return (await res.json()) as Annotations
 }
 
-// function processMaterial(material:THREE.MeshStandardMaterial){
-//     material.flatShading = true
 
-//     return material
-// }
+const materialDefaults = new Map<THREE.Material, { depthTest: boolean; depthWrite: boolean; opacity: number; transparent: boolean }>();
+
+function cacheMaterial(material: THREE.Material) {
+  if (materialDefaults.has(material)) return;
+  materialDefaults.set(material, {
+    depthTest: material.depthTest,
+    depthWrite: material.depthWrite ?? true,
+    opacity: 'opacity' in material ? (material as THREE.Material & { opacity: number }).opacity : 1,
+    transparent: material.transparent ?? false,
+  });
+}
+
+function setXRayMode(enabled: boolean) {
+  materialDefaults.forEach((defaults, material) => {
+    cacheMaterial(material); // no-op if already cached
+    material.depthTest = enabled ? false : defaults.depthTest;
+    material.depthWrite = enabled ? false : defaults.depthWrite;
+    if ('opacity' in material) {
+      (material as THREE.Material & { opacity: number }).opacity = enabled ? 0.2 : defaults.opacity;
+      material.transparent = enabled ? true : defaults.transparent;
+    }
+    material.needsUpdate = true;
+  });
+}
+
+if (xRayToggleButton) {
+  xRayToggleButton.addEventListener('click', () => {
+    isXRayEnabled = !isXRayEnabled
+    setXRayMode(isXRayEnabled)
+    xRayToggleButton.textContent = isXRayEnabled ? 'Disable X-ray' : 'Enable X-ray'
+  })
+}
 
 const dracoLoader = new DRACOLoader()
 dracoLoader.setDecoderPath('/js/libs/draco/')
@@ -79,17 +110,22 @@ loader.setDRACOLoader(dracoLoader)
 loader.load(
     '/models/test_industrial.glb',
     async (gltf) => {
-        // gltf.scene.traverse((c) => {
-        //     console.log(c)
-        //     if ((c as THREE.Mesh).isMesh) {
-        //         const mesh = c as THREE.Mesh
-        //         const material = processMaterial(mesh.material) as THREE.MeshStandardMaterial
-        //         mesh.material = material
-        //     }
-        // })
+        gltf.scene.traverse((obj) => {
+            if (!('material' in obj)) return;
+            const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+            materials.forEach((mat) => {
+                if (mat instanceof THREE.Material) cacheMaterial(mat);
+            });
+        });
+
         scene.add(gltf.scene)
         sceneMeshes.push(gltf.scene)
         annotations = await loadAnnotations('/data/annotations.json')
+        setXRayMode(isXRayEnabled)
+        if (xRayToggleButton) {
+            xRayToggleButton.disabled = false
+            xRayToggleButton.textContent = isXRayEnabled ? 'Disable X-ray' : 'Enable X-ray'
+        }
 
         // everything below stays the same:
         const annotationsPanel = document.getElementById('annotationsPanel') as HTMLDivElement
