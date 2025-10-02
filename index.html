@@ -6,13 +6,31 @@
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <link rel="stylesheet" href="/src/style.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vite + TS</title>
+  <title>Maintenance Console</title>
 </head>
 
-<body>
-  <progress value="0" max="100" id="progressBar"></progress>
-  <button id="xRayToggle" disabled>Enable X-ray</button>
-  <div id="annotationsPanel"></div>
+<body data-theme="dark">
+  <div id="hud">
+    <div class="control-cluster" id="controlPanel">
+      <h1>Maintenance Console</h1>
+      <progress value="0" max="100" id="progressBar"></progress>
+      <button id="xRayToggle" disabled>Enable X-ray</button>
+      <button id="platformToggle">Hide Platform</button>
+      <div class="theme-indicator">
+        <span>Interface Theme</span>
+        <label class="theme-toggle">
+          <input type="checkbox" id="themeToggle" aria-label="Toggle theme" />
+          <span id="themeToggleLabel">Dark</span>
+        </label>
+      </div>
+    </div>
+
+    <div id="annotationsPanel" class="control-cluster">
+      <h2>Service Points</h2>
+      <p id="annotationHint" class="subtitle">Select a component marker to inspect its service notes.</p>
+    </div>
+  </div>
+
   <script type="module" src="/src/main.ts"></script>
 </body>
 
