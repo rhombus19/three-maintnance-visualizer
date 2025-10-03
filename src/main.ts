@@ -108,7 +108,7 @@ dracoLoader.setDecoderPath('/js/libs/draco/')
 const loader = new GLTFLoader()
 loader.setDRACOLoader(dracoLoader)
 loader.load(
-    '/models/test_industrial.glb',
+    '/models/test_industrial_2.glb',
     async (gltf) => {
         gltf.scene.traverse((obj) => {
             if (!('material' in obj)) return;
