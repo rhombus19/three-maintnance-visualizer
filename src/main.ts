@@ -59,8 +59,11 @@ const circleTexture = new THREE.TextureLoader().load('/img/circle.png')
 
 const progressBar = document.getElementById('progressBar') as HTMLProgressElement
 const xRayToggleButton = document.getElementById('xRayToggle') as HTMLButtonElement | null
+const controlPanelToggleButton = document.getElementById('controlPanelToggle') as HTMLButtonElement | null
 
 let isXRayEnabled = false
+let isControlPanelHidden = false
+let controlPanelObject: THREE.Object3D | null = null
 
 async function loadAnnotations(url: string): Promise<Annotations> {
   const res = await fetch(url)
@@ -102,6 +105,15 @@ if (xRayToggleButton) {
   })
 }
 
+if (controlPanelToggleButton) {
+  controlPanelToggleButton.addEventListener('click', () => {
+    if (!controlPanelObject) return
+    isControlPanelHidden = !isControlPanelHidden
+    controlPanelObject.visible = !isControlPanelHidden
+    controlPanelToggleButton.textContent = isControlPanelHidden ? 'Show Control Panel' : 'Hide Control Panel'
+  })
+}
+
 const dracoLoader = new DRACOLoader()
 dracoLoader.setDecoderPath('/js/libs/draco/')
 
@@ -120,6 +132,19 @@ loader.load(
 
         scene.add(gltf.scene)
         sceneMeshes.push(gltf.scene)
+
+        const controlPanel = gltf.scene.getObjectByName('control_panel_entry') ?? null
+        if (controlPanel) {
+            controlPanelObject = controlPanel
+            controlPanelObject.visible = !isControlPanelHidden
+            if (controlPanelToggleButton) {
+                controlPanelToggleButton.disabled = false
+                controlPanelToggleButton.textContent = isControlPanelHidden ? 'Show Control Panel' : 'Hide Control Panel'
+            }
+        } else {
+            console.warn('control_panel_entry object not found in loaded scene')
+        }
+
         annotations = await loadAnnotations('/data/annotations.json')
         setXRayMode(isXRayEnabled)
         if (xRayToggleButton) {
@@ -167,9 +192,26 @@ loader.load(
             if (annotations[a].description) {
             const annotationDescriptionDiv = document.createElement('div')
             annotationDescriptionDiv.className = 'annotationDescription'
-            annotationDescriptionDiv.innerHTML = annotations[a].description!
+            const closeButton = document.createElement('button')
+            closeButton.type = 'button'
+            closeButton.className = 'annotationDescription-closeButton'
+            closeButton.innerHTML = '&times;'
+            closeButton.setAttribute('aria-label', 'Close annotation description')
+
+            const annotationDescriptionContent = document.createElement('div')
+            annotationDescriptionContent.className = 'annotationDescription-content'
+            annotationDescriptionContent.innerHTML = annotations[a].description!
+
+            annotationDescriptionDiv.appendChild(closeButton)
+            annotationDescriptionDiv.appendChild(annotationDescriptionContent)
             annotationDiv.appendChild(annotationDescriptionDiv)
             annotations[a].descriptionDomElement = annotationDescriptionDiv
+
+            closeButton.addEventListener('click', (event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                annotationDescriptionDiv.style.display = 'none'
+            })
             }
         })
 
