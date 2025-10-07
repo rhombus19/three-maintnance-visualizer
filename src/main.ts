@@ -6,6 +6,8 @@ import Stats from 'three/addons/libs/stats.module.js'
 import JEASINGS, { JEasing, Cubic } from 'jeasings'
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js'
 
+const base_url = import.meta.env.BASE_URL;
+
 interface Annotation {
     title: string
     description: string
@@ -50,12 +52,12 @@ document.body.appendChild(labelRenderer.domElement)
 const controls = new OrbitControls(camera, renderer.domElement)
 controls.dampingFactor = 0.2
 controls.enableDamping = true
-controls.target.set(8, 3, 4)
+controls.target.set(0, 0, 0)
 
 const raycaster = new THREE.Raycaster()
 const sceneMeshes = new Array()
 
-const circleTexture = new THREE.TextureLoader().load('/img/circle.png')
+const circleTexture = new THREE.TextureLoader().load(`${base_url}assets/circle.png`)
 
 const progressBar = document.getElementById('progressBar') as HTMLProgressElement
 const xRayToggleButton = document.getElementById('xRayToggle') as HTMLButtonElement | null
@@ -115,12 +117,12 @@ if (controlPanelToggleButton) {
 }
 
 const dracoLoader = new DRACOLoader()
-dracoLoader.setDecoderPath('/js/libs/draco/')
+dracoLoader.setDecoderPath(`${base_url}draco/`)
 
 const loader = new GLTFLoader()
 loader.setDRACOLoader(dracoLoader)
 loader.load(
-    '/models/test_industrial_2.glb',
+    `${base_url}assets/test_industrial_2.glb`,
     async (gltf) => {
         gltf.scene.traverse((obj) => {
             if (!('material' in obj)) return;
@@ -145,7 +147,7 @@ loader.load(
             console.warn('control_panel_entry object not found in loaded scene')
         }
 
-        annotations = await loadAnnotations('/data/annotations.json')
+        annotations = await loadAnnotations(`${base_url}assets/annotations.json`)
         setXRayMode(isXRayEnabled)
         if (xRayToggleButton) {
             xRayToggleButton.disabled = false

@@ -1,0 +1,45 @@
+[
+    {
+      "title": "Electronics Panel",
+      "description": "<p>The panel where the electronics are stored</p>",
+      "camPos": {
+        "x": 6.1400,
+        "z": -1.085,
+        "y": 2.963
+      },
+      "lookAt": {
+        "x": 2.423,
+        "z": -1.604,
+        "y": 1.461
+      }
+    },
+    {
+      "title": "Big Silo",
+      "description": "<p>One of the big silos</p>",
+      "lookAt": {
+        "x": 2.877,
+        "z": 2.515,
+        "y": 3.861
+      },
+      "camPos": { 
+        "x": 5.278,
+        "z": 4.536,
+        "y": 5.570
+      }
+    },
+    {
+      "title": "Small Silo",
+      "description": "<p>The small silo, you can store small stuff here</p>",
+      "lookAt": {
+        "x": -2.586,
+        "z": -0.4739,
+        "y": 2.606
+      },
+      "camPos": {
+        "x": -3.857,
+        "z": -0.4968,
+        "y": 3.6902
+      }
+    }
+
+  ]
