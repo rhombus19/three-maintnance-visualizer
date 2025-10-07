@@ -152,7 +152,6 @@ loader.load(
             xRayToggleButton.textContent = isXRayEnabled ? 'Disable X-ray' : 'Enable X-ray'
         }
 
-        // everything below stays the same:
         const annotationsPanel = document.getElementById('annotationsPanel') as HTMLDivElement
         const ul = document.createElement('ul')
         const ulElem = annotationsPanel.appendChild(ul)
@@ -176,7 +175,7 @@ loader.load(
             })
             const annotationSprite = new THREE.Sprite(annotationSpriteMaterial)
             annotationSprite.scale.set(0.066, 0.066, 0.066)
-            annotationSprite.position.copy(annotations[a].lookAt) // works with {x,y,z}
+            annotationSprite.position.copy(annotations[a].lookAt)
             annotationSprite.userData.id = a
             annotationSprite.renderOrder = 1
             scene.add(annotationSprite)
