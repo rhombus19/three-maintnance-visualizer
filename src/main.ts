@@ -62,6 +62,46 @@ const circleTexture = new THREE.TextureLoader().load(`${base_url}assets/circle.p
 const progressBar = document.getElementById('progressBar') as HTMLProgressElement
 const xRayToggleButton = document.getElementById('xRayToggle') as HTMLButtonElement | null
 const controlPanelToggleButton = document.getElementById('controlPanelToggle') as HTMLButtonElement | null
+const controlsBarElement = document.getElementById('controlsBar') as HTMLDivElement | null
+const controlsMenuToggleButton = document.getElementById('controlsMenuToggle') as HTMLButtonElement | null
+const controlsMenuElement = document.getElementById('controlsMenu') as HTMLDivElement | null
+
+if (controlsMenuToggleButton && controlsBarElement && controlsMenuElement) {
+  const setExpandedState = (expanded: boolean) => {
+    controlsBarElement.classList.toggle('menu-open', expanded)
+    controlsMenuToggleButton.setAttribute('aria-expanded', expanded ? 'true' : 'false')
+  }
+
+  controlsMenuToggleButton.addEventListener('click', () => {
+    const expanded = !controlsBarElement.classList.contains('menu-open')
+    setExpandedState(expanded)
+  })
+
+  const collapseMenu = () => setExpandedState(false)
+
+  const mobileMedia = window.matchMedia('(max-width: 640px)')
+  const updateForViewport = (matches: boolean) => {
+    if (!matches) {
+      collapseMenu()
+    }
+  }
+
+  collapseMenu()
+  updateForViewport(mobileMedia.matches)
+  if (typeof mobileMedia.addEventListener === 'function') {
+    mobileMedia.addEventListener('change', (event) => updateForViewport(event.matches))
+  } else if (typeof mobileMedia.addListener === 'function') {
+    mobileMedia.addListener((event) => updateForViewport(event.matches))
+  }
+
+  controlsMenuElement.addEventListener('click', (event) => {
+    const target = event.target
+    if (!(target instanceof HTMLElement)) return
+    if (target.tagName === 'BUTTON' && mobileMedia.matches) {
+      collapseMenu()
+    }
+  })
+}
 
 let isXRayEnabled = false
 let isControlPanelHidden = false

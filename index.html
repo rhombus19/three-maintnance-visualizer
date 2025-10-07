@@ -10,11 +10,24 @@
 
 <body>
   <progress value="0" max="100" id="progressBar"></progress>
-  <div id="controlsBar">
-    <button id="xRayToggle" disabled>Enable X-ray</button>
-    <button id="controlPanelToggle" disabled>Hide Control Panel</button>
+  <div id="controlsBar" class="controlsBar">
+    <button
+      id="controlsMenuToggle"
+      class="controlsMenuToggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="controlsMenu"
+    >
+      Menu
+    </button>
+    <div id="controlsMenu" class="controlsMenu" role="menu">
+      <div class="controlsMenu-buttons" role="none">
+        <button id="xRayToggle" disabled>Enable X-ray</button>
+        <button id="controlPanelToggle" disabled>Hide Control Panel</button>
+      </div>
+      <div id="annotationsPanel"></div>
+    </div>
   </div>
-  <div id="annotationsPanel"></div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 
