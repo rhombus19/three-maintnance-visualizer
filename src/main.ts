@@ -162,7 +162,7 @@ dracoLoader.setDecoderPath(`${base_url}draco/`)
 const loader = new GLTFLoader()
 loader.setDRACOLoader(dracoLoader)
 loader.load(
-    `${base_url}assets/test_industrial_2.glb`,
+    'https://autumn-hill-f731.romankobets2004.workers.dev/test_industrial_2.glb',
     async (gltf) => {
         gltf.scene.traverse((obj) => {
             if (!('material' in obj)) return;
@@ -356,6 +356,11 @@ function gotoAnnotation(a: any): void {
 
 const stats = new Stats()
 document.body.appendChild(stats.dom)
+stats.dom.style.position = 'fixed';
+stats.dom.style.left = '8px';
+stats.dom.style.bottom = '8px';
+stats.dom.style.top = 'auto';
+stats.dom.style.right = 'auto';
 
 function animate() {
     requestAnimationFrame(animate)
