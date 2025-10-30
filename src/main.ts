@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
-import Stats from 'three/addons/libs/stats.module.js'
+// import Stats from 'three/addons/libs/stats.module.js'
 import JEASINGS, { JEasing, Cubic } from 'jeasings'
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js'
 
@@ -106,6 +106,7 @@ if (controlsMenuToggleButton && controlsBarElement && controlsMenuElement) {
 let isXRayEnabled = false
 let isControlPanelHidden = false
 let controlPanelObject: THREE.Object3D | null = null
+let renderPending = false
 
 async function loadAnnotations(url: string): Promise<Annotations> {
   const res = await fetch(url)
@@ -137,7 +138,7 @@ function setXRayMode(enabled: boolean) {
     }
     material.needsUpdate = true;
   });
-  render()
+  scheduleRender()
 }
 
 if (xRayToggleButton) {
@@ -154,8 +155,8 @@ if (controlPanelToggleButton) {
     isControlPanelHidden = !isControlPanelHidden
     controlPanelObject.visible = !isControlPanelHidden
     controlPanelToggleButton.textContent = isControlPanelHidden ? 'Show Control Panel' : 'Hide Control Panel'
+    scheduleRender()
   })
-  render()
 }
 
 const dracoLoader = new DRACOLoader()
@@ -257,7 +258,7 @@ loader.load(
             })
             }
         })
-        render()
+        scheduleRender()
         progressBar.style.display = 'none'
         }, (xhr) => {
         if (xhr.lengthComputable) {
@@ -272,7 +273,7 @@ function onWindowResize() {
     camera.updateProjectionMatrix()
     renderer.setSize(window.innerWidth, window.innerHeight)
     labelRenderer.setSize(window.innerWidth, window.innerHeight)
-    render()
+    scheduleRender()
 }
 
 const v = new THREE.Vector2()
@@ -317,6 +318,8 @@ function onDoubleClick(event: MouseEvent) {
             )
             .easing(Cubic.Out)
             .start()
+
+        scheduleRender()
     }
 }
 renderer.domElement.addEventListener('dblclick', onDoubleClick, false)
@@ -354,38 +357,43 @@ function gotoAnnotation(a: any): void {
     if (a.descriptionDomElement) {
         a.descriptionDomElement.style.display = 'block'
     }
+
+    scheduleRender()
 }
 
-const stats = new Stats()
-document.body.appendChild(stats.dom)
-stats.dom.style.position = 'fixed';
-stats.dom.style.left = '8px';
-stats.dom.style.bottom = '8px';
-stats.dom.style.top = 'auto';
-stats.dom.style.right = 'auto';
+// const stats = new Stats()
+// document.body.appendChild(stats.dom)
+// stats.dom.style.position = 'fixed';
+// stats.dom.style.left = '8px';
+// stats.dom.style.bottom = '8px';
+// stats.dom.style.top = 'auto';
+// stats.dom.style.right = 'auto';
 
-function animate() {
-    // requestAnimationFrame(animate)
-
-    controls.update()
+function renderFrame() {
+    renderPending = false
 
     JEASINGS.update()
 
-    // render()
+    const controlsChanged = controls.update()
 
-    stats.update()
-}
-
-function render() {
     renderer.render(scene, camera)
     labelRenderer.render(scene, camera)
+
+    // stats.update()
+
+    const hasActiveEasings = JEASINGS.getLength() > 0
+    if (controlsChanged || hasActiveEasings) {
+        scheduleRender()
+    }
 }
 
-controls.addEventListener('change', render);
-// TODO:
-// - render on demand
-// - fix vertex count, fix draw calls count
-// - 
+function scheduleRender() {
+    if (renderPending) return
+    renderPending = true
+    requestAnimationFrame(renderFrame)
+}
 
-animate()
-render()
+controls.addEventListener('change', scheduleRender);
+
+
+scheduleRender()
