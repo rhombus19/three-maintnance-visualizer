@@ -137,6 +137,7 @@ function setXRayMode(enabled: boolean) {
     }
     material.needsUpdate = true;
   });
+  render()
 }
 
 if (xRayToggleButton) {
@@ -154,15 +155,16 @@ if (controlPanelToggleButton) {
     controlPanelObject.visible = !isControlPanelHidden
     controlPanelToggleButton.textContent = isControlPanelHidden ? 'Show Control Panel' : 'Hide Control Panel'
   })
+  render()
 }
 
 const dracoLoader = new DRACOLoader()
-dracoLoader.setDecoderPath(`${base_url}draco/`)
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/')
 
 const loader = new GLTFLoader()
 loader.setDRACOLoader(dracoLoader)
 loader.load(
-    'https://autumn-hill-f731.romankobets2004.workers.dev/test_industrial_2.glb',
+    `${base_url}assets/test_industrial_4.glb`,
     async (gltf) => {
         gltf.scene.traverse((obj) => {
             if (!('material' in obj)) return;
@@ -255,7 +257,7 @@ loader.load(
             })
             }
         })
-
+        render()
         progressBar.style.display = 'none'
         }, (xhr) => {
         if (xhr.lengthComputable) {
@@ -363,13 +365,13 @@ stats.dom.style.top = 'auto';
 stats.dom.style.right = 'auto';
 
 function animate() {
-    requestAnimationFrame(animate)
+    // requestAnimationFrame(animate)
 
     controls.update()
 
     JEASINGS.update()
 
-    render()
+    // render()
 
     stats.update()
 }
@@ -379,4 +381,11 @@ function render() {
     labelRenderer.render(scene, camera)
 }
 
+controls.addEventListener('change', render);
+// TODO:
+// - render on demand
+// - fix vertex count, fix draw calls count
+// - 
+
 animate()
+render()
