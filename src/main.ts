@@ -1,8 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
-// import Stats from 'three/addons/libs/stats.module.js'
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import JEASINGS, { JEasing, Cubic } from 'jeasings'
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js'
 
@@ -159,13 +158,12 @@ if (controlPanelToggleButton) {
   })
 }
 
-const dracoLoader = new DRACOLoader()
-dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/')
+
 
 const loader = new GLTFLoader()
-loader.setDRACOLoader(dracoLoader)
+loader.setMeshoptDecoder(MeshoptDecoder);
 loader.load(
-    `${base_url}assets/test_industrial_4.glb`,
+    'https://autumn-hill-f731.romankobets2004.workers.dev/test_industrial_4_meshopt.glb',
     async (gltf) => {
         gltf.scene.traverse((obj) => {
             if (!('material' in obj)) return;

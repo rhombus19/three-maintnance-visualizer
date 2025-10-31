@@ -16,6 +16,7 @@
     "vite": "^7.1.6"
   },
   "dependencies": {
+    "gltfpack": "^0.25.0",
     "jeasings": "^0.0.16",
     "three": "^0.180.0"
   }
