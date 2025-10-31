@@ -163,7 +163,7 @@ if (controlPanelToggleButton) {
 const loader = new GLTFLoader()
 loader.setMeshoptDecoder(MeshoptDecoder);
 loader.load(
-    'https://autumn-hill-f731.romankobets2004.workers.dev/test_industrial_4_meshopt.glb',
+    'https://autumn-hill-f731.romankobets2004.workers.dev/test_industrial_5.glb',
     async (gltf) => {
         gltf.scene.traverse((obj) => {
             if (!('material' in obj)) return;
@@ -359,14 +359,6 @@ function gotoAnnotation(a: any): void {
     scheduleRender()
 }
 
-// const stats = new Stats()
-// document.body.appendChild(stats.dom)
-// stats.dom.style.position = 'fixed';
-// stats.dom.style.left = '8px';
-// stats.dom.style.bottom = '8px';
-// stats.dom.style.top = 'auto';
-// stats.dom.style.right = 'auto';
-
 function renderFrame() {
     renderPending = false
 
@@ -376,8 +368,6 @@ function renderFrame() {
 
     renderer.render(scene, camera)
     labelRenderer.render(scene, camera)
-
-    // stats.update()
 
     const hasActiveEasings = JEASINGS.getLength() > 0
     if (controlsChanged || hasActiveEasings) {
